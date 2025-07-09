@@ -1,2 +1,5 @@
-telethon
+
 requests
+python-telegram-bot
+flask
+telethon
