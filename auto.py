@@ -191,17 +191,30 @@ async def main():
 
 asyncio.run(main())
 
+# Bu qism faylingizning eng oxiriga joylashtiriladi
 from flask import Flask
-import threading
+from threading import Thread
 
 app = Flask('')
 
 @app.route('/')
 def home():
-    return "Bot is alive!"
+    return "Bot ishlayapti!"
 
 def run():
     app.run(host='0.0.0.0', port=8080)
 
-threading.Thread(target=run).start()
+t = Thread(target=run)
+t.start()
+const express = require('express')
+const app = express()
+const port = process.env.PORT || 4000
+
+app.get('/', (req, res) => {
+  res.send('Hello World!')
+})
+
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`)
+})
 
