@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ovoz Batl - Statistika</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: var(--tg-theme-bg-color, #1a1a2e);
+            color: var(--tg-theme-text-color, #ffffff);
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .real-time-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.2);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        .pulse {
+            width: 8px;
+            height: 8px;
+            background: #00ff88;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        .tabs {
+            display: flex;
+            background: var(--tg-theme-secondary-bg-color, #16213e);
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.3);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            background: transparent;
+            color: var(--tg-theme-text-color, #ffffff);
+            font-size: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .tab-icon {
+            font-size: 24px;
+        }
+
+        .section {
+            display: none;
+            padding: 15px;
+            animation: fadeIn 0.3s;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: var(--tg-theme-secondary-bg-color, #16213e);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Real-time votes section */
+        .contest-item {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .contest-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .contest-channel {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .contest-id {
+            background: rgba(102, 126, 234, 0.2);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+
+        .vote-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+
+        .vote-from {
+            color: #00ff88;
+            font-weight: 500;
+        }
+
+        .vote-arrow {
+            margin: 0 8px;
+            color: #888;
+        }
+
+        .vote-to {
+            color: #ff6b6b;
+            font-weight: 500;
+        }
+
+        .vote-time {
+            margin-left: auto;
+            font-size: 11px;
+            color: #888;
+        }
+
+        /* Channels section */
+        .channel-card {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .channel-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #667eea;
+        }
+
+        .channel-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .stat-box {
+            background: rgba(255,255,255,0.05);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #00ff88;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        /* Profile section */
+        .profile-header {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+            border-radius: 15px;
+            margin-bottom: 15px;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            font-size: 36px;
+            font-weight: 700;
+        }
+
+        .profile-name {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .profile-username {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .profile-stat-card {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .profile-stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .profile-stat-label {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .activity-list {
+            margin-top: 15px;
+        }
+
+        .activity-item {
+            padding: 10px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .activity-icon {
+            font-size: 20px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #888;
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .badge-active {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+        }
+
+        .badge-ended {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+        }
+
+        @media (max-width: 380px) {
+            .channel-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <h1>🏆 Ovoz Batl</h1>
+        <div class="real-time-indicator">
+            <div class="pulse"></div>
+            <span id="currentTime">00:00:00</span>
+        </div>
+    </div>
+
+    <!-- Section 1: Real-time Votes -->
+    <div class="section active" id="section-votes">
+        <div class="card">
+            <div class="card-title">
+                📊 Real Vaqtda Ovozlar
+            </div>
+            <div id="votes-container">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Ma'lumotlar yuklanmoqda...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 2: Channels -->
+    <div class="section" id="section-channels">
+        <div class="card">
+            <div class="card-title">
+                📢 Aktiv Kanallar
+            </div>
+            <div id="channels-container">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Kanallar yuklanmoqda...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 3: My Profile -->
+    <div class="section" id="section-profile">
+        <div class="profile-header">
+            <div class="profile-avatar" id="profile-avatar">U</div>
+            <div class="profile-name" id="profile-name">Foydalanuvchi</div>
+            <div class="profile-username" id="profile-username">@username</div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                📈 Mening Statistikam
+            </div>
+            <div class="profile-stats">
+                <div class="profile-stat-card">
+                    <div class="profile-stat-value" id="stat-participations">0</div>
+                    <div class="profile-stat-label">Qatnashgan konkurslar</div>
+                </div>
+                <div class="profile-stat-card">
+                    <div class="profile-stat-value" id="stat-wins">0</div>
+                    <div class="profile-stat-label">1-oʻrinlar</div>
+                </div>
+                <div class="profile-stat-card">
+                    <div class="profile-stat-value" id="stat-votes">0</div>
+                    <div class="profile-stat-label">Jami ovozlar</div>
+                </div>
+                <div class="profile-stat-card">
+                    <div class="profile-stat-value" id="stat-created">0</div>
+                    <div class="profile-stat-label">Yaratgan konkurslar</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                🕐 Oxirgi Aktivlik
+            </div>
+            <div class="activity-list" id="activity-list">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Aktivlik yuklanmoqda...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('votes')">
+            <span class="tab-icon">📊</span>
+            <span>Ovozlar</span>
+        </button>
+        <button class="tab" onclick="switchTab('channels')">
+            <span class="tab-icon">📢</span>
+            <span>Kanallar</span>
+        </button>
+        <button class="tab" onclick="switchTab('profile')">
+            <span class="tab-icon">👤</span>
+            <span>Profil</span>
+        </button>
+    </div>
+
+    <script>
+        // Telegram WebApp initialization
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.ready();
+
+        // Get user data from Telegram
+        const user = tg.initDataUnsafe?.user || {};
+        const userId = user.id || 0;
+        const username = user.username || 'Foydalanuvchi';
+        const firstName = user.first_name || '';
+        const lastName = user.last_name || '';
+
+        // Update profile info
+        document.getElementById('profile-name').textContent = `${firstName} ${lastName}`.trim() || username;
+        document.getElementById('profile-username').textContent = user.username ? `@${user.username}` : '';
+        document.getElementById('profile-avatar').textContent = (firstName?.[0] || username[0] || 'U').toUpperCase();
+
+        // Real-time clock
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('uz-UZ', { 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit' 
+            });
+            document.getElementById('currentTime').textContent = timeString;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Tab switching
+        function switchTab(tabName) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(`section-${tabName}`).classList.add('active');
+            
+            // Activate tab
+            event.target.closest('.tab').classList.add('active');
+            
+            // Load data for section
+            if (tabName === 'votes') loadVotes();
+            if (tabName === 'channels') loadChannels();
+            if (tabName === 'profile') loadProfile();
+        }
+
+        // Load real-time votes
+        async function loadVotes() {
+            const container = document.getElementById('votes-container');
+            
+            // Send data request to bot
+            tg.sendData(JSON.stringify({
+                action: 'get_realtime_votes',
+                user_id: userId
+            }));
+            
+            // Simulated data (replace with actual API call)
+            setTimeout(() => {
+                container.innerHTML = `
+                    <div class="contest-item">
+                        <div class="contest-header">
+                            <span class="contest-channel">@ovoz_batl_kanal</span>
+                            <span class="contest-id">ID: 123</span>
+                        </div>
+                        <div class="vote-item">
+                            <span class="vote-from">@user1</span>
+                            <span class="vote-arrow">→</span>
+                            <span class="vote-to">@participant1</span>
+                            <span class="vote-time">2s oldin</span>
+                        </div>
+                        <div class="vote-item">
+                            <span class="vote-from">@user2</span>
+                            <span class="vote-arrow">→</span>
+                            <span class="vote-to">@participant2</span>
+                            <span class="vote-time">5s oldin</span>
+                        </div>
+                    </div>
+                    <div class="contest-item">
+                        <div class="contest-header">
+                            <span class="contest-channel">@another_channel</span>
+                            <span class="contest-id">ID: 124</span>
+                        </div>
+                        <div class="vote-item">
+                            <span class="vote-from">@user3</span>
+                            <span class="vote-arrow">→</span>
+                            <span class="vote-to">@participant3</span>
+                            <span class="vote-time">10s oldin</span>
+                        </div>
+                    </div>
+                `;
+            }, 500);
+        }
+
+        // Load channels
+        async function loadChannels() {
+            const container = document.getElementById('channels-container');
+            
+            tg.sendData(JSON.stringify({
+                action: 'get_active_channels',
+                user_id: userId
+            }));
+            
+            // Simulated data
+            setTimeout(() => {
+                container.innerHTML = `
+                    <div class="channel-card">
+                        <div class="channel-name">
+                            @ovoz_batl_kanal
+                            <span class="badge badge-active">Aktiv</span>
+                        </div>
+                        <div class="channel-stats">
+                            <div class="stat-box">
+                                <div class="stat-value">15</div>
+                                <div class="stat-label">Konkurslar</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">342</div>
+                                <div class="stat-label">Qatnashchilar</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">1.2K</div>
+                                <div class="stat-label">Ovozlar</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="channel-card">
+                        <div class="channel-name">
+                            @another_channel
+                            <span class="badge badge-active">Aktiv</span>
+                        </div>
+                        <div class="channel-stats">
+                            <div class="stat-box">
+                                <div class="stat-value">8</div>
+                                <div class="stat-label">Konkurslar</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">156</div>
+                                <div class="stat-label">Qatnashchilar</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">678</div>
+                                <div class="stat-label">Ovozlar</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }, 500);
+        }
+
+        // Load profile
+        async function loadProfile() {
+            tg.sendData(JSON.stringify({
+                action: 'get_user_profile',
+                user_id: userId
+            }));
+            
+            // Simulated data
+            setTimeout(() => {
+                document.getElementById('stat-participations').textContent = '24';
+                document.getElementById('stat-wins').textContent = '5';
+                document.getElementById('stat-votes').textContent = '156';
+                document.getElementById('stat-created').textContent = '3';
+                
+                document.getElementById('activity-list').innerHTML = `
+                    <div class="activity-item">
+                        <span class="activity-icon">🏆</span>
+                        <span>1-oʻrin @ovoz_batl_kanal da</span>
+                    </div>
+                    <div class="activity-item">
+                        <span class="activity-icon">🗳️</span>
+                        <span>@participant1 ga ovoz berdingiz</span>
+                    </div>
+                    <div class="activity-item">
+                        <span class="activity-icon">✅</span>
+                        <span>Konkursga qatnashdingiz</span>
+                    </div>
+                    <div class="activity-item">
+                        <span class="activity-icon">🎲</span>
+                        <span>Random konkursda gʻolib boʻldingiz</span>
+                    </div>
+                `;
+            }, 500);
+        }
+
+        // Handle messages from bot
+        window.addEventListener('message', (event) => {
+            const data = event.data;
+            if (data.action === 'update_votes') {
+                loadVotes();
+            }
+        });
+
+        // Auto-refresh every 5 seconds
+        setInterval(() => {
+            const activeSection = document.querySelector('.section.active').id;
+            if (activeSection === 'section-votes') loadVotes();
+            if (activeSection === 'section-channels') loadChannels();
+        }, 5000);
+
+        // Initial load
+        loadVotes();
+        
+        // Set theme colors
+        document.documentElement.style.setProperty('--tg-theme-bg-color', tg.themeParams.bg_color || '#1a1a2e');
+        document.documentElement.style.setProperty('--tg-theme-text-color', tg.themeParams.text_color || '#ffffff');
+        document.documentElement.style.setProperty('--tg-theme-secondary-bg-color', tg.themeParams.secondary_bg_color || '#16213e');
+    </script>
+</body>
+</html>
