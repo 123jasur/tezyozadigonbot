@@ -3,28 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ovoz Batl - Statistika</title>
-    <!-- Telegram WebApp Script -->
+    <title>Ovoz Batl - Real Vaqtda</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    
     <style>
-        /* Asosiy stillar */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
 
         body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background: var(--tg-theme-bg-color, #1a1a2e);
             color: var(--tg-theme-text-color, #ffffff);
             min-height: 100vh;
-            padding-bottom: 80px; /* Pastki menyu uchun joy */
+            padding-bottom: 80px;
         }
 
-        /* Header qismi */
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 20px;
@@ -36,10 +32,9 @@
         }
 
         .header h1 {
-            font-size: 22px;
+            font-size: 24px;
             font-weight: 700;
             margin-bottom: 5px;
-            color: white;
         }
 
         .real-time-indicator {
@@ -50,7 +45,6 @@
             padding: 6px 12px;
             border-radius: 20px;
             font-size: 12px;
-            color: white;
             margin-top: 8px;
         }
 
@@ -67,11 +61,45 @@
             50% { opacity: 0.5; transform: scale(1.2); }
         }
 
-        /* Kontent qismi */
+        .tabs {
+            display: flex;
+            background: var(--tg-theme-secondary-bg-color, #16213e);
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.3);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            background: transparent;
+            color: var(--tg-theme-text-color, #ffffff);
+            font-size: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .tab-icon {
+            font-size: 24px;
+        }
+
         .section {
             display: none;
             padding: 15px;
-            animation: fadeIn 0.3s ease-in-out;
+            animation: fadeIn 0.3s;
         }
 
         .section.active {
@@ -101,7 +129,6 @@
             gap: 8px;
         }
 
-        /* Ovozlar ro'yxati stili */
         .contest-item {
             background: rgba(255,255,255,0.05);
             border-radius: 12px;
@@ -114,30 +141,31 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
-            padding-bottom: 8px;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
         .contest-channel {
             font-weight: 600;
-            color: #8da2fb;
-            font-size: 14px;
+            color: #667eea;
         }
 
         .contest-id {
             background: rgba(102, 126, 234, 0.2);
-            padding: 2px 8px;
+            padding: 4px 8px;
             border-radius: 6px;
-            font-size: 11px;
-            color: #ccc;
+            font-size: 12px;
         }
 
         .vote-item {
             display: flex;
             align-items: center;
-            padding: 6px 0;
-            font-size: 13px;
+            padding: 8px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            margin-bottom: 6px;
+            font-size: 14px;
         }
 
         .vote-from {
@@ -161,14 +189,53 @@
             color: #888;
         }
 
-        /* Profil stili */
+        .channel-card {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .channel-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #667eea;
+        }
+
+        .channel-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .stat-box {
+            background: rgba(255,255,255,0.05);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #00ff88;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #888;
+            margin-top: 4px;
+        }
+
         .profile-header {
             text-align: center;
             padding: 20px;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
             border-radius: 15px;
             margin-bottom: 15px;
-            border: 1px solid rgba(102, 126, 234, 0.3);
         }
 
         .profile-avatar {
@@ -180,10 +247,8 @@
             align-items: center;
             justify-content: center;
             margin: 0 auto 12px;
-            font-size: 32px;
+            font-size: 36px;
             font-weight: 700;
-            color: white;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
 
         .profile-name {
@@ -211,18 +276,24 @@
         }
 
         .profile-stat-value {
-            font-size: 24px;
+            font-size: 28px;
             font-weight: 700;
-            color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .profile-stat-label {
             font-size: 12px;
-            color: #aaa;
+            color: #888;
             margin-top: 5px;
         }
 
-        /* Aktivlik ro'yxati */
+        .activity-list {
+            margin-top: 15px;
+        }
+
         .activity-item {
             padding: 10px;
             background: rgba(255,255,255,0.03);
@@ -235,13 +306,12 @@
         }
 
         .activity-icon {
-            font-size: 18px;
+            font-size: 20px;
         }
 
-        /* Loading spinner */
         .loading {
             text-align: center;
-            padding: 30px;
+            padding: 20px;
             color: #888;
         }
 
@@ -260,58 +330,34 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Pastki navigatsiya */
-        .tabs {
-            display: flex;
-            background: var(--tg-theme-secondary-bg-color, #16213e);
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            box-shadow: 0 -4px 15px rgba(0,0,0,0.3);
-            padding-bottom: env(safe-area-inset-bottom);
-        }
-
-        .tab {
-            flex: 1;
-            padding: 12px 5px;
+        .empty-state {
             text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: none;
-            background: transparent;
+            padding: 40px 20px;
             color: #888;
-            font-size: 11px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
         }
 
-        .tab.active {
-            color: #667eea;
-            background: rgba(102, 126, 234, 0.1);
-        }
-
-        .tab-icon {
-            font-size: 20px;
-        }
-
-        /* Badge */
         .badge {
             display: inline-block;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 10px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
             font-weight: 600;
-            margin-left: 5px;
+            margin-left: 8px;
         }
-        .badge-active { background: rgba(0, 255, 136, 0.2); color: #00ff88; }
+
+        .badge-active {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+        }
+
+        @media (max-width: 380px) {
+            .channel-stats {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
-
     <!-- Header -->
     <div class="header">
         <h1>🏆 Ovoz Batl</h1>
@@ -321,7 +367,7 @@
         </div>
     </div>
 
-    <!-- 1-Bo'lim: Real Vaqtda Ovozlar -->
+    <!-- Section 1: Real-time Votes -->
     <div class="section active" id="section-votes">
         <div class="card">
             <div class="card-title">📊 Real Vaqtda Ovozlar</div>
@@ -334,23 +380,24 @@
         </div>
     </div>
 
-    <!-- 2-Bo'lim: Kanallar (Hozircha bo'sh, keyin to'ldirasiz) -->
+    <!-- Section 2: Channels -->
     <div class="section" id="section-channels">
         <div class="card">
             <div class="card-title">📢 Aktiv Kanallar</div>
             <div id="channels-container">
                 <div class="loading">
-                    <p>Hozircha aktiv kanallar yo'q.</p>
+                    <div class="spinner"></div>
+                    Kanallar yuklanmoqda...
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 3-Bo'lim: Mening Profilim -->
+    <!-- Section 3: Profile -->
     <div class="section" id="section-profile">
         <div class="profile-header">
             <div class="profile-avatar" id="profile-avatar">U</div>
-            <div class="profile-name" id="profile-name">Yuklanmoqda...</div>
+            <div class="profile-name" id="profile-name">Foydalanuvchi</div>
             <div class="profile-username" id="profile-username">@username</div>
         </div>
 
@@ -358,19 +405,19 @@
             <div class="card-title">📈 Mening Statistikam</div>
             <div class="profile-stats">
                 <div class="profile-stat-card">
-                    <div class="profile-stat-value" id="stat-participations">-</div>
+                    <div class="profile-stat-value" id="stat-participations">0</div>
                     <div class="profile-stat-label">Qatnashgan</div>
                 </div>
                 <div class="profile-stat-card">
-                    <div class="profile-stat-value" id="stat-wins">-</div>
+                    <div class="profile-stat-value" id="stat-wins">0</div>
                     <div class="profile-stat-label">G'alaba</div>
                 </div>
                 <div class="profile-stat-card">
-                    <div class="profile-stat-value" id="stat-votes">-</div>
+                    <div class="profile-stat-value" id="stat-votes">0</div>
                     <div class="profile-stat-label">Ovoz berdi</div>
                 </div>
                 <div class="profile-stat-card">
-                    <div class="profile-stat-value" id="stat-created">-</div>
+                    <div class="profile-stat-value" id="stat-created">0</div>
                     <div class="profile-stat-label">Yaratdi</div>
                 </div>
             </div>
@@ -381,12 +428,13 @@
             <div class="activity-list" id="activity-list">
                 <div class="loading">
                     <div class="spinner"></div>
+                    Aktivlik yuklanmoqda...
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Pastki Menyu -->
+    <!-- Navigation Tabs -->
     <div class="tabs">
         <button class="tab active" onclick="switchTab('votes')">
             <span class="tab-icon">📊</span>
@@ -403,68 +451,71 @@
     </div>
 
     <script>
-        // Telegram WebApp ni ishga tushirish
+        // Telegram WebApp initialization
         const tg = window.Telegram.WebApp;
-        tg.expand(); // To'liq ekran
+        tg.expand();
         tg.ready();
 
-        // Foydalanuvchi ma'lumotlarini olish
+        // Get user data
         const user = tg.initDataUnsafe?.user || {};
         const userId = user.id || 0;
         const username = user.username || 'Foydalanuvchi';
         const firstName = user.first_name || '';
         const lastName = user.last_name || '';
 
-        // Profilni yangilash
+        // Update profile info
         document.getElementById('profile-name').textContent = `${firstName} ${lastName}`.trim() || username;
         document.getElementById('profile-username').textContent = user.username ? `@${user.username}` : '';
         document.getElementById('profile-avatar').textContent = (firstName?.[0] || username[0] || 'U').toUpperCase();
 
-        // Soatni yangilash
+        // Real-time clock
         function updateClock() {
             const now = new Date();
             document.getElementById('currentTime').textContent = now.toLocaleTimeString('uz-UZ', { 
-                hour: '2-digit', minute: '2-digit', second: '2-digit' 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit' 
             });
         }
         setInterval(updateClock, 1000);
         updateClock();
 
-        // Tablarni almashtirish funksiyasi
+        // Tab switching
         function switchTab(tabName) {
-            // Barcha bo'limlarni yashirish
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-
-            // Tanlanganni ko'rsatish
             document.getElementById(`section-${tabName}`).classList.add('active');
             
-            // Tugmani aktiv qilish (event.target orqali emas, ID orqali topamiz)
             const tabs = document.querySelectorAll('.tab');
             if(tabName === 'votes') tabs[0].classList.add('active');
             if(tabName === 'channels') tabs[1].classList.add('active');
             if(tabName === 'profile') tabs[2].classList.add('active');
 
-            // Ma'lumotlarni yuklash
             if (tabName === 'votes') loadVotes();
+            if (tabName === 'channels') loadChannels();
             if (tabName === 'profile') loadProfile();
         }
 
-        // 1. Real vaqtda ovozlarni yuklash
+        // Load real-time votes
         async function loadVotes() {
             const container = document.getElementById('votes-container');
             
-            // Botga so'rov yuborish (agar kerak bo'lsa)
-            // tg.sendData(JSON.stringify({ action: 'get_realtime_votes', user_id: userId }));
-
-            // Hozircha simulyatsiya qilingan ma'lumot (Botdan real ma'lumot kelganda o'zgartirasiz)
-            // Bu yerda botdan kelgan ma'lumotni kutishingiz mumkin, lekin hozircha statik ko'rsatyapmiz
+            // Send data to bot
+            tg.sendData(JSON.stringify({
+                action: 'get_realtime_votes',
+                user_id: userId
+            }));
             
+            // Show loading
+            container.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Yangilanmoqda...
+                </div>
+            `;
+            
+            // Simulated data (replace with actual data from bot)
             setTimeout(() => {
-                // Agar botdan ma'lumot kelsa, shu yerga HTML generatsiya qilasiz
-                // Hozircha bo'sh holatda qoldiramiz yoki namuna ko'rsatamiz
-                
-                // NAMUNA MA'LUMOT (Buni bot logikasiga ulashingiz kerak)
                 container.innerHTML = `
                     <div class="contest-item">
                         <div class="contest-header">
@@ -488,25 +539,62 @@
             }, 500);
         }
 
-        // 2. Profil statistikasini yuklash
+        // Load channels
+        async function loadChannels() {
+            const container = document.getElementById('channels-container');
+            
+            tg.sendData(JSON.stringify({
+                action: 'get_active_channels',
+                user_id: userId
+            }));
+            
+            setTimeout(() => {
+                container.innerHTML = `
+                    <div class="channel-card">
+                        <div class="channel-name">
+                            @ovoz_batl_kanal
+                            <span class="badge badge-active">Aktiv</span>
+                        </div>
+                        <div class="channel-stats">
+                            <div class="stat-box">
+                                <div class="stat-value">15</div>
+                                <div class="stat-label">Konkurslar</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">342</div>
+                                <div class="stat-label">Qatnashchilar</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value">1.2K</div>
+                                <div class="stat-label">Ovozlar</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }, 500);
+        }
+
+        // Load profile
         async function loadProfile() {
-            // Botga so'rov yuborish
             tg.sendData(JSON.stringify({
                 action: 'get_user_profile',
                 user_id: userId
             }));
-
-            // Simulyatsiya (Bot javob berguncha)
+            
             setTimeout(() => {
-                document.getElementById('stat-participations').textContent = '5';
-                document.getElementById('stat-wins').textContent = '1';
-                document.getElementById('stat-votes').textContent = '12';
-                document.getElementById('stat-created').textContent = '0';
+                document.getElementById('stat-participations').textContent = '24';
+                document.getElementById('stat-wins').textContent = '5';
+                document.getElementById('stat-votes').textContent = '156';
+                document.getElementById('stat-created').textContent = '3';
                 
                 document.getElementById('activity-list').innerHTML = `
                     <div class="activity-item">
+                        <span class="activity-icon">🏆</span>
+                        <span>1-oʻrin @ovoz_batl_kanal da</span>
+                    </div>
+                    <div class="activity-item">
                         <span class="activity-icon">🗳️</span>
-                        <span>Siz @kanal da ovoz berdingiz</span>
+                        <span>@participant1 ga ovoz berdingiz</span>
                     </div>
                     <div class="activity-item">
                         <span class="activity-icon">✅</span>
@@ -516,14 +604,20 @@
             }, 500);
         }
 
-        // Dastlabki yuklash
-        loadVotes();
+        // Auto-refresh every 5 seconds
+        setInterval(() => {
+            const activeSection = document.querySelector('.section.active').id;
+            if (activeSection === 'section-votes') loadVotes();
+            if (activeSection === 'section-channels') loadChannels();
+        }, 5000);
 
-        // Ranglarni Telegram mavzusiga moslash
+        // Initial load
+        loadVotes();
+        
+        // Set theme colors
         document.documentElement.style.setProperty('--tg-theme-bg-color', tg.themeParams.bg_color || '#1a1a2e');
         document.documentElement.style.setProperty('--tg-theme-text-color', tg.themeParams.text_color || '#ffffff');
         document.documentElement.style.setProperty('--tg-theme-secondary-bg-color', tg.themeParams.secondary_bg_color || '#16213e');
-
     </script>
 </body>
 </html>
